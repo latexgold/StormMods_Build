@@ -194,8 +194,7 @@ public class Floater {
                 -1, -1,
                 this.getLayoutType(),
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT);
 
         windowManagerDrawViewParams.gravity = Gravity.TOP | Gravity.START;
@@ -386,7 +385,7 @@ public class Floater {
 
         windowManager.addView(rootFrame, windowManagerParams);
 
-        rootFrame.setOnTouchListener(createOnTouchListener());
+        // Removed rootFrame.setOnTouchListener to prevent full-screen touch swallowing
         logoImagem.setOnTouchListener(createOnTouchListener());
         logoImagem.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1050,7 +1049,7 @@ public class Floater {
                         convertDPStatic(85),
                         convertDPStatic(52),
                         LAYOUT_FLAG,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                         PixelFormat.TRANSLUCENT);
 
                 params.gravity = Gravity.TOP | Gravity.LEFT;

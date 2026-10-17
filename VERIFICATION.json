@@ -1,0 +1,439 @@
+{
+  "java_files": 15,
+  "java_syntax": "passed",
+  "source_xml": "passed",
+  "signed_grant_java_test": "valid accepted; tamper rejected",
+  "android_build": "not run",
+  "php_runtime": "not available",
+  "live_domain": "not tested",
+  "protected_unchanged_files": [
+    {
+      "path": "app/src/main/java/com/microsoft/xboxone/smartglass/Initialize.java",
+      "sha256": "accfed33d12b175b11a7ac38369f2d454c2b4bed7e7c5eb67bf7486b13a692fc"
+    },
+    {
+      "path": "app/src/main/java/com/microsoft/xboxone/smartglass/RootServices.java",
+      "sha256": "e22a75eff2f773d449766db2b3c874464c4e8bd480849e6c4cdb200c2a28fd02"
+    },
+    {
+      "path": "app/src/main/jni/Android.mk",
+      "sha256": "d62086eb08aafa4cac168e3f40626525d1ce42990331e1c9726577770bf2c2c4"
+    },
+    {
+      "path": "app/src/main/jni/Application.mk",
+      "sha256": "785fcddafe37eb7232adbba9f15a52a3bd6d763475bcbfaf21f3a95972e0aabc"
+    },
+    {
+      "path": "app/src/main/jni/src/BooleanClient.h",
+      "sha256": "7b63aba103ead71710903f72cd066ec37eaf38572244e0267dd0ff21dfbf96fc"
+    },
+    {
+      "path": "app/src/main/jni/src/BooleanServer.h",
+      "sha256": "4d5387366939821eec5e997880adcb24c3a0580d299c0567ef97ee70e1f2dab4"
+    },
+    {
+      "path": "app/src/main/jni/src/Client.cpp",
+      "sha256": "56d54e8e0e4bf593f0ad070c7c54afd90e2466149a0647402db225c0758988c3"
+    },
+    {
+      "path": "app/src/main/jni/src/Client.h",
+      "sha256": "e46ead774c407c3e790068503659db6f2df5f904369c8ee9654bb63fad49f109"
+    },
+    {
+      "path": "app/src/main/jni/src/DrawEsp.h",
+      "sha256": "e81b1bba77f542ec56f4801b97fc0f2f7a629e47336562deaec6354690ce280e"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Dobby.h",
+      "sha256": "f8c9e3e71bd105a089a0a75083fa2c2d51ea517a65c2143489395810687c5ef7"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Encrypt/Encrypt.h",
+      "sha256": "8c50ef3878e312c04cbab65b2a2f5bf6b36ce0cf57f07af9229d2e2bc71928c4"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Encrypt/oxorany.cpp",
+      "sha256": "c4db047aa0c8515ed12bd83d7c692a4c296d7d577408864d5b692797c19d6959"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Encrypt/oxorany.h",
+      "sha256": "c446b10a806ed0223ab083ac0a65b6586a9a62d16fa2b3ffb4dd1ff462e0f448"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Encrypt/oxorany_include.h",
+      "sha256": "da45254b98ce6fd97c7adbd62185318acb46c356642547451b57772d05e2bbaa"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Logger.h",
+      "sha256": "01e600b0a8b799080d6a0486413c083e50c574e2e343e8b5e1ac548490b022f1"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Utils.h",
+      "sha256": "145f71fefc96a2341fa9da3106542494e8f28b214712205f59d4a7bb98429d79"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/Utils.h.bak",
+      "sha256": "f52a2cd8e6f2236ad1a66cd942c07b933ef5351f21eec4d6e75e4e79d598e0f1"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/Makefile.am",
+      "sha256": "e38477cca72c0909bb3055f8aa56b657d6ebd794a10b6ec20bf5f7cc5edff3f1"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/Makefile.in",
+      "sha256": "33673898aaba21d76c705e8937323b38c4c5c38d53f7a85a8ec7b1358c5c389d"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/curl.h",
+      "sha256": "6b718fbbd63ccebf2c4c4e7cc68f13e16dd2f302d83acc4940f54386bcb8a151"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/curlver.h",
+      "sha256": "9b08486ffe0a5be4d5e7fcccf248f1ef6be05cf120225ffd9dd593d419fc9c91"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/easy.h",
+      "sha256": "8ecfa6b643f406770e666b2bedab40dcedc98c877a32bdc8feb51e01c397b89c"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/mprintf.h",
+      "sha256": "61e8e3918f879fe4cf63992bd108eb08dfb2568fa907ec528d8ed3ac02ba0c56"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/multi.h",
+      "sha256": "e2e68e6c37d69abbf281a545bc8a6a0cdc867b34f9e254e3cc1f5e710ef32955"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/stdcheaders.h",
+      "sha256": "78eb917e7082bf7ce255840c3af5fadd927b7eb5a62305c54b36c7da852cbfd4"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/system.h",
+      "sha256": "fe0a3dbcf592227359a4d9741e4d8a257488df2caf9c56074dd1c4d7401394a7"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/curl/typecheck-gcc.h",
+      "sha256": "bde6321b067fe32cf551bb1631afc7b2a983c5281122a11b95a2eefa0aef72bf"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Base64.h",
+      "sha256": "1d0fcda1be0e152c1431316dc310d412ec8d4ea9d6aeeee66525cb7018ec301c"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Http.h",
+      "sha256": "c6fb53ceffc3b8df9f616acc9897ae793a1b901fc9b81bbaa53586ce790e203c"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/HttpRequest.h",
+      "sha256": "58ac672bd94c0015716811d0d0d253cb3607475d9618cba435fdbae235b3ef22"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/HttpResponse.h",
+      "sha256": "1051268c36de3db1b56d1f468582be590090c1533e0468b5736a88a6df9a9747"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Listener.h",
+      "sha256": "9ba122eed8359b6f2c6b8a13e9a3bff24530d0e75c6aca957789919842aa0cb6"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/NetworkEncoding.h",
+      "sha256": "3b1f354c8e431c44994d77cba11fc57b9588d311826241e1b477012b74163c81"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Packet.h",
+      "sha256": "c31f29ef1e651c96d705006b283a405bfd24c034390af079d5e37e9ea7e1d88c"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Packetable.h",
+      "sha256": "833f217aef327f7966efdf7fb559fe5a61aa71d2f7f4df00bf1740dd0e735a65"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Sendable.h",
+      "sha256": "965f5c8261e67d2aa4695ea433b0501ab83983fadd69f54326dae937234eef16"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Sha1.h",
+      "sha256": "33aea5cb833931d14aa250320ceb9beec50ef49d09d4e5f116defb9425c1fc7a"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/Socket.h",
+      "sha256": "212f731408215baae705fb6dc6046c87b353c92c6195e551c1166f9647678424"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/SocketDescriptor.h",
+      "sha256": "6de40a84f7f2c0ba7cca20209758df0f80c84e66609f3019574af03f169218ae"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/SocketSelector.h",
+      "sha256": "01e59e85e113795f2259d986f34a44fdc4da2dc7ad346ee592f34debb3413181"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/TcpListener.h",
+      "sha256": "4c5e8eb3d107c7f23d57e9ce318f9ab83a7f23b9ab2d534494cdd7439c6f6a8a"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/TcpSocket.h",
+      "sha256": "2b9c706652bca24e82e1145f78492517b7e6f450b843768f115c419845b25a92"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/URL.h",
+      "sha256": "7c611cd96a0ae46b9ef54fb170fda882dbab4cb4a43908585e5d991d64962bdc"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/WebFrame.h",
+      "sha256": "7ad8f9b9142af6008e817b1b86ca6076681cecffbaeddfdba83861f0d30662dd"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/WebSocket.h",
+      "sha256": "697c00b88dc90834bcae1a936a0e3fef1e6059c18ebd686877bb39c90d807ade"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/frnetlib/version.h",
+      "sha256": "ac7f794956a69486ccb1d139a25d9f3ffb82e8ef9257521f01b0469d78ab7720"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/http.h",
+      "sha256": "667860e35a846d170718fe589b6a7252c8148cc5e84a1d4776c3f6391d677461"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/json.h",
+      "sha256": "1075fbe2a99a88479435992b38262e85a0c7395fa8447b0b18ad36ecdd50b754"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/obfuscate.h",
+      "sha256": "e99d8e2dfa4fcf574715cf8d3e6b6398c39e89dba1724d57754f81d14984b60d"
+    },
+    {
+      "path": "app/src/main/jni/src/Includes/stdint.hhgh",
+      "sha256": "e6832e19aa1b62e794ad2f91054992755170ebdabe4a99660cab4f3b418dc02b"
+    },
+    {
+      "path": "app/src/main/jni/src/KernelDriver.h",
+      "sha256": "9306a79bf1a302384022ca121c0dcc8ee4aa26ad41317103296c16eec5e12b46"
+    },
+    {
+      "path": "app/src/main/jni/src/MemfdHelper.cpp",
+      "sha256": "28826af739abbe7b7c373beb5547e7d269efc1d301e69cffba3519207b249b79"
+    },
+    {
+      "path": "app/src/main/jni/src/Namegun.cpp",
+      "sha256": "7b4b1570aa6110192ad11187651a5f53aac7a3f81c477c4064654cb2b79a3553"
+    },
+    {
+      "path": "app/src/main/jni/src/Namegun.h",
+      "sha256": "32293ea26ef02a1737984413872ed190c49470e8ea8e8ad574ea13a40cb312fd"
+    },
+    {
+      "path": "app/src/main/jni/src/Offsets.h",
+      "sha256": "31e87d50010ea530a0f2176ec0e302038f8345f69c22710084c8c3a47c6c4364"
+    },
+    {
+      "path": "app/src/main/jni/src/Server.cpp",
+      "sha256": "3c0bc5b6ac70db8d875f15f24ce53578b3f68c006ef6b40245dbbf9326539af4"
+    },
+    {
+      "path": "app/src/main/jni/src/Server.h",
+      "sha256": "ee86963151ea5f5b2942e36605cc9ee7caa3703c4990eda2be61f43cdf06c829"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/Const.h",
+      "sha256": "dd0d0089dc0f77fc3c4a4a25b2846a79cabb00abaacc8d9f5123867753e305f2"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/Widgets/Category.h",
+      "sha256": "8141fe83dda7e04cc6aa849ad9202b9f98511a7e9144a83bd476ae4ecefe8f01"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/Widgets/Images.h",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/Widgets/ImportWidgets.h",
+      "sha256": "f090ba1fc335329e9caf01a4c01a93e94140ddd1828ed2573ade5bad7801e59c"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/Widgets/SeekBar.h",
+      "sha256": "04d1904d66f0bfbb945c0fe27b6ebce3007b76e7612252131ec70d3991fb5f3b"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/Widgets/Switch.h",
+      "sha256": "bd4a0ba67148f711a7c025ef0c40e974f490c866638aeb1654d2ee2671b55451"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/client.cpp",
+      "sha256": "8f2c5332fcd7f665ae715717a8a6af57c81ffe39e73135b555eba5a7533c9e59"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/client.h",
+      "sha256": "36d061866e41fa566152823228d7642d2a8f9d4e053983f6603589e47b003b79"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/server.cpp",
+      "sha256": "87536475f385312def3b7c2e7726bfca7be31c11aa77bab106350d9fdc1e02bd"
+    },
+    {
+      "path": "app/src/main/jni/src/Socket/server.h",
+      "sha256": "f32b2989aec58ce83bff5200c4349d80c17b44fd1b1a177f62340a2bd7258e77"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/Color.hpp",
+      "sha256": "cce280fffdb49dd5ef218eb5e2c1ab4f4f9506ac8efc3c9ccca6b8a3c9af8a7a"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/ESP.h",
+      "sha256": "008d3d286fa0933a8434dc27f7c5126454c78a9b7472bfb706acecaa33b829f4"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/Quaternion.hpp",
+      "sha256": "33da8f31ce0e408747b5d77ee5fb17b4bd161a9b9e96959559a92de06e5c1533"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/Rect.hpp",
+      "sha256": "3cd797015ff9363e018eb54ff3295748806042389ac078b211cbaf0f7a4acac2"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/Unity.h",
+      "sha256": "f21b760925c7a17676d57642b1e4973664998f27863fb79c1db1ec81c8cfb75e"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/Vector2.hpp",
+      "sha256": "cd5392df3355aa5cb7c0f1252f79469115d8154f790cb58cadbc9232b3480a4c"
+    },
+    {
+      "path": "app/src/main/jni/src/Unity/Vector3.hpp",
+      "sha256": "d41d5a6a4ce5a857c029845ff8d30d36ba7b98f4efdf161726b5c62e9311352c"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Button.h",
+      "sha256": "88ea5a331bc94f1d5cec7dd84f65a9601be3227ce80d27416f2550938d56a96d"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Category.h",
+      "sha256": "6a7b153039edad9b68e5f7696f2744e8f90af6f0052a387a8314533478bf5920"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Category.h.bak",
+      "sha256": "8141fe83dda7e04cc6aa849ad9202b9f98511a7e9144a83bd476ae4ecefe8f01"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Images.h",
+      "sha256": "25ca246f230ea87425ff028216827a94b2960a24658fe07bfc96077980bc12ef"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Images.h.bak",
+      "sha256": "0ab3a598dcc3cf1d245bfef5fdb88b85865d311388c5a098e02d4c340e49ff58"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/ImportWidgets.h",
+      "sha256": "823aa4a6b4d5a417c9f03bd3df558f8274099cc72d680cfee22b853aa862cb48"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Methods.h",
+      "sha256": "e42c1ae0fd5739ee54cf4cd7005cd6bd0daa06d34443c0ccfdff3e60cea49c46"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/SeekBar.h",
+      "sha256": "febd1464eb3426e13079fca1d8ce7e71e65ca7cd31394ce2719aaab5561c11a6"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/SeekBar.h.bak",
+      "sha256": "04d1904d66f0bfbb945c0fe27b6ebce3007b76e7612252131ec70d3991fb5f3b"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Switch.h",
+      "sha256": "d6e5402cc04b7213afb2d940062ac2f1ed8668797e43b72ebee699a9560c8a0d"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Switch.h.bak",
+      "sha256": "bd4a0ba67148f711a7c025ef0c40e974f490c866638aeb1654d2ee2671b55451"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/Tab.h",
+      "sha256": "dbab8aacec36b18ecf2d626e99a6d1290d880e3cd28bb0acd945bdd44f5fc615"
+    },
+    {
+      "path": "app/src/main/jni/src/Widgets/TextBox.h",
+      "sha256": "c596d9a0ae0d0817739858719b8c404fa29d39fbb58c8932ae385f21b8148fbd"
+    },
+    {
+      "path": "app/src/main/jni/src/bklkill_bin.h",
+      "sha256": "a64f98aa4d832cb95b1a19c290130a540223c9a90351957fa80eac5f89b94f0e"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/Base64.cpp",
+      "sha256": "8d7943b204dbfcb62dce34bd577ae79d6c057b008cdee18626a84d506d114ae3"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/Http.cpp",
+      "sha256": "1baa8bb168e0f58080d9f54369155656541da0aff37f8d3ee9aa8deeb711c303"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/HttpRequest.cpp",
+      "sha256": "f0acb6c5e0bd677742ccede929ee92b978f65a4e28fc37b82c2d27367ad0cf8e"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/HttpResponse.cpp",
+      "sha256": "8ed46387d004d66cae2874fa299b56a8374b10b73dfb240a52be24d3c94660aa"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/Sha1.cpp",
+      "sha256": "c1dc41bcabab4ab79ccc8085b68d640be9bdaf60750147315b3674f7c8ca43b2"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/Socket.cpp",
+      "sha256": "a119dd6405aa433f579213d0e5d5933b39adfa5342eff58ad43bc4aa42b9e1e3"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/SocketSelector.cpp",
+      "sha256": "a18e6796722487f281a8f201ad62bd6f19c7be02876ef3f252d6d73b56ae71b2"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/TcpListener.cpp",
+      "sha256": "ac3c6b765138ab0b766e76f6f81eb8c02ad4e38272f897c9943f56c76a7c03e7"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/TcpSocket.cpp",
+      "sha256": "b41f108a563d1b4cbfea0b14633dec8334640768778d4e76e28a62b2e3bc72d2"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/URL.cpp",
+      "sha256": "f8483ac8eface78dc1281b60fb198606f7b0d7012f5ab88b0a0aafdd0e7939c9"
+    },
+    {
+      "path": "app/src/main/jni/src/frnetlib/WebFrame.cpp",
+      "sha256": "baa6b80cc68b22536da8e0e3eadaecd3a4519c507af3564d8ee68e7aaa9419bd"
+    },
+    {
+      "path": "app/src/main/jni/src/static/curl/arm64-v8a/libcurl.a",
+      "sha256": "ac2bc98ed3d0e2a1b502342c4a231deb6ec04bd37a80edca8a7aca4c5a59075a"
+    },
+    {
+      "path": "app/src/main/jni/src/static/curl/armeabi-v7a/libcurl.a",
+      "sha256": "954234e787cf0994c0cd7d3a12e4952d587a475aaf0f4104ab0d10a6b8901e5f"
+    },
+    {
+      "path": "app/src/main/jni/src/static/curl/x86/libcurl.a",
+      "sha256": "6539db2ebbb2cc22c32e94ce64b2212749817f05aa8a19a43bed725f98d7e688"
+    },
+    {
+      "path": "app/src/main/jni/src/static/curl/x86_64/libcurl.a",
+      "sha256": "7852fbf434c139d1cff3a89f07e8c2fec81376a763489f179aa506cdb1724bfe"
+    },
+    {
+      "path": "app/src/main/jni/src/static/dobby/arm64-v8a/libdobby.a",
+      "sha256": "b0128fe5e30b5401859c389703e0515c499e0af5db9d1e4b5e8face672d61cdc"
+    },
+    {
+      "path": "app/src/main/jni/src/static/dobby/armeabi-v7a/libdobby.a",
+      "sha256": "d019b4e0015743d7a2d345ef4458537efde678ee36c7b897209870b65ed9dba5"
+    },
+    {
+      "path": "app/src/main/jni/src/static/dobby/x86/libdobby.a",
+      "sha256": "9185c701e716db6d18ad6b721699563e0de76bd2318a3a0d5963a2283ade198f"
+    },
+    {
+      "path": "app/src/main/jni/src/static/dobby/x86_64/libdobby.a",
+      "sha256": "f8a8b471e6a6980791aada48ea67025b33d757fa5e537d9227f0c38d58e67e0d"
+    }
+  ]
+}

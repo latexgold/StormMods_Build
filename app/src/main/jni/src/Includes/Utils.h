@@ -12,11 +12,6 @@
 #include <fstream>
 #include <inttypes.h>
 #include <fcntl.h>
-#include <sys/uio.h>
-#include <thread>
-#include <chrono>
-#include <random>
-#include <sys/prctl.h> // For thread name masking
 #include "Logger.h"
 #include "KernelDriver.h"
 
@@ -25,7 +20,7 @@ uintptr_t libAddress, anogs;
 extern bool g_useKernelDriver;
 bool g_useKernelDriver = true;
 
-// Dummy variables to fix compilation
+// Dummy variables to fix Server.cpp compilation
 int mem_fd = 0;
 int my_open_mem(int pid) { return 0; }
 
@@ -77,6 +72,7 @@ uintptr_t FindLibrary(const char* name, int index) {
     return start;
 }
 
+// READ VIA HMKPM (Ring-0)
 template<class T>
 T Read(uintptr_t address) {
     T buf{};
@@ -84,16 +80,8 @@ T Read(uintptr_t address) {
         if (KernelDriver::readMemory(target_pid, address, &buf, sizeof(T))) {
             return buf;
         }
-        g_useKernelDriver = false;
     }
-    
-    struct iovec local, remote;
-    local.iov_base = &buf;
-    local.iov_len = sizeof(T);
-    remote.iov_base = reinterpret_cast<void*>(address);
-    remote.iov_len = sizeof(T);
-    syscall(270, target_pid, &local, 1, &remote, 1, 0); 
-    return buf;
+    return buf; // Fails silently if KPM is not loaded
 }
 
 template<>
@@ -105,36 +93,16 @@ std::string Read<std::string>(uintptr_t address) {
         if (KernelDriver::readMemory(target_pid, address, buffer, max_len - 1)) {
             buffer[max_len - 1] = '\0';
             result = buffer;
-            return result;
         }
     }
     return result;
 }
 
-// ==========================================
-// ANTI-DETECT MICRO-WRITE IMPLEMENTATION
-// ==========================================
+// WRITE VIA HMKPM (Ring-0)
 template<typename T>
 bool Write(uintptr_t address, T value) {
     if (g_useKernelDriver && KernelDriver::isLoaded()) {
-        if (KernelDriver::writeMemory(target_pid, address, &value, sizeof(T))) {
-            return true;
-        }
-    }
-
-    // 1. Jitter: Random delay to break predictable syscall timing patterns
-    std::this_thread::sleep_for(std::chrono::milliseconds(1 + (rand() % 5)));
-
-    // 2. Thread Masking: If ACE scans /proc/self/task, this thread looks like a system thread
-    prctl(PR_SET_NAME, "kworker/u16:2", 0, 0, 0);
-
-    // 3. Ephemeral File Descriptor: Open, write, close. No persistent FD for ACE to find.
-    std::string mem_path = "/proc/" + std::to_string(target_pid) + "/mem";
-    int fd = open(mem_path.c_str(), O_RDWR | O_CLOEXEC);
-    if (fd > 0) {
-        ssize_t bytes = pwrite(fd, &value, sizeof(T), address);
-        close(fd); 
-        return (bytes == sizeof(T));
+        return KernelDriver::writeMemory(target_pid, address, &value, sizeof(T));
     }
     return false;
 }
@@ -152,27 +120,15 @@ std::vector<uint8_t> ParseHexBytes(const std::string& hexString) {
 }
 
 bool WriteIO(uintptr_t address, const std::vector<uint8_t>& bytes) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1 + (rand() % 5)));
-    prctl(PR_SET_NAME, "kworker/u16:2", 0, 0, 0);
-    std::string mem_path = "/proc/" + std::to_string(target_pid) + "/mem";
-    int fd = open(mem_path.c_str(), O_RDWR | O_CLOEXEC);
-    if (fd > 0) {
-        ssize_t written = pwrite(fd, bytes.data(), bytes.size(), static_cast<off_t>(address));
-        close(fd);
-        return (written == static_cast<ssize_t>(bytes.size()));
+    if (g_useKernelDriver && KernelDriver::isLoaded()) {
+        return KernelDriver::writeMemory(target_pid, address, bytes.data(), bytes.size());
     }
     return false;
 }
 
 bool WriteIO1(uintptr_t address, const void* data, size_t size) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1 + (rand() % 5)));
-    prctl(PR_SET_NAME, "kworker/u16:2", 0, 0, 0);
-    std::string mem_path = "/proc/" + std::to_string(target_pid) + "/mem";
-    int fd = open(mem_path.c_str(), O_RDWR | O_CLOEXEC);
-    if (fd > 0) {
-        ssize_t written = pwrite(fd, data, size, static_cast<off_t>(address));
-        close(fd);
-        return (written == static_cast<ssize_t>(size));
+    if (g_useKernelDriver && KernelDriver::isLoaded()) {
+        return KernelDriver::writeMemory(target_pid, address, data, size);
     }
     return false;
 }

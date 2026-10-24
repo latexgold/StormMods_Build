@@ -2,51 +2,57 @@
 #define KERNEL_DRIVER_H
 
 #include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <fcntl.h>
-#include <string>
-#include <cstring>
-#include <errno.h>
-#include <android/log.h>
+#include <sys/syscall.h>
+#include <sys/prctl.h>
 #include <stdint.h>
-#include <arpa/inet.h>
+#include <string.h>
 
-#define OP_READ_MEM 8001
+// HMKPM uses PRCTL for kernel communication
+#define KPM_PRCTL_CMD 0xDEADBEEF
+#define KPM_OP_READ   1
+#define KPM_OP_WRITE  2
 
-struct copy_memory_t {
-    uint32_t pid;
-    uint32_t _pad0;
+struct kpm_mem_rw {
+    pid_t pid;
     uint64_t addr;
-    uint64_t buffer;
+    void* buffer;
     uint64_t size;
+    int is_write;
 };
 
 class KernelDriver {
 public:
     static bool isLoaded() {
-        int fd = socket(AF_INET, SOCK_DGRAM, 0);
-        if (fd >= 0) { close(fd); return true; }
-        return false;
+        // Try to read a null pointer. If it doesn't crash, the KPM is loaded.
+        uint64_t test = 0;
+        struct kpm_mem_rw rw;
+        rw.pid = getpid();
+        rw.addr = (uint64_t)&test;
+        rw.buffer = &test;
+        rw.size = sizeof(test);
+        rw.is_write = 0;
+        // A return of 0 or >0 usually means the KPM intercepted it
+        return prctl(KPM_PRCTL_CMD, KPM_OP_READ, &rw) >= 0;
     }
 
     static bool readMemory(pid_t pid, uint64_t addr, void *buffer, size_t size) {
-        int fd = socket(AF_INET, SOCK_DGRAM, 0);
-        if (fd < 0) return false;
-        struct copy_memory_t rw;
+        struct kpm_mem_rw rw;
         rw.pid = pid;
-        rw._pad0 = 0;
         rw.addr = addr;
-        rw.buffer = (uint64_t)buffer;
+        rw.buffer = buffer;
         rw.size = size;
-        int ret = ioctl(fd, OP_READ_MEM, &rw);
-        close(fd);
-        return ret == 0;
+        rw.is_write = 0;
+        return prctl(KPM_PRCTL_CMD, KPM_OP_READ, &rw) == 0;
     }
 
     static bool writeMemory(pid_t pid, uint64_t addr, const void *buffer, size_t size) {
-        // Forces fallback to the Anti-Detect Micro-Write in Utils.h
-        return false; 
+        struct kpm_mem_rw rw;
+        rw.pid = pid;
+        rw.addr = addr;
+        rw.buffer = const_cast<void*>(buffer);
+        rw.size = size;
+        rw.is_write = 1;
+        return prctl(KPM_PRCTL_CMD, KPM_OP_WRITE, &rw) == 0;
     }
 };
 

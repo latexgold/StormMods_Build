@@ -1382,31 +1382,28 @@ void CreateDataList(Response& SendResponse) {
     }
 }
 
-__attribute__ ((visibility ("hidden")))
+                __attribute__ ((visibility ("hidden")))
 int main(int argc, char*argv[]){
     if (InitServer() == (0)) {
         if (server.Accept()) {
             target_pid = FindPid("com.dts.freefiremax");
             if (target_pid > 0) {
-                
+                // REMOVED: mem_fd = my_open_mem(target_pid); 
+                // REMOVED: if (mem_fd <= 0) { return 1; }
+                // We rely entirely on KernelDriver and the Micro-Write in Utils.h
             } else {
                 exit(1);
             }
 
-            /*libAddress = FindLibrary("libil2cpp.so", 1);
-            if (libAddress == 0) {
-            }*/
             libAddress = FindCorrectLibBase();
             std::thread(SilentAimTh).detach();
             std::thread(FlyHackTh).detach();
             std::thread(AimColliderTh).detach();
-            //std::thread(AimLagThread).detach();
             std::thread(AimHardTh).detach();
             std::thread(PullEnemyTh).detach();
             std::thread(DiveKillThread).detach();
             std::thread(RotateTh).detach();
             std::thread(TeleportToMarkThread).detach();
-            //std::thread(TeleKillThread).detach();
 
             Request request{};
             while (server.receive((void*)&request) > (0)) {
@@ -1438,10 +1435,7 @@ int main(int argc, char*argv[]){
                 } else if(request.Mode == 45){
                     pPlayer.KillInChest = request.m_IsOn;
                     SendResponse.Success = true;
-                } /*else if(request.Mode == 46){
-                    pPlayer.TeleKill = request.m_IsOn;
-                    SendResponse.Success = true;
-                }*/ else if(request.Mode == 48){
+                } else if(request.Mode == 48){
                     pPlayer.GhostHack = request.m_IsOn;
                     SendResponse.Success = true;
                 } else if(request.Mode == 49){
@@ -1480,10 +1474,7 @@ int main(int argc, char*argv[]){
                 } else if(request.Mode == 70){
                     pPlayer.HeadRate = (float)request.value;
                     SendResponse.Success = true;
-                } /*else if(request.Mode == 71){
-                    pPlayer.AimLag = request.m_IsOn;
-                    SendResponse.Success = true;
-                }*/ else if (request.Mode == 100) {
+                } else if (request.Mode == 100) {
                     if (request.value == 1) {
                         currentOffsets = &FFMaxInd;
                     } else {

@@ -222,7 +222,7 @@ void getUTF8(char* dst, uintptr_t addr) {
 }
 
 bool is_elf_header(uintptr_t addr) {
-    if (addr == 0 || mem_fd <= 0) return false;
+    if (addr == 0) return false;
     unsigned char magic[4];
     magic[0] = Read<uint8_t>(addr);
     magic[1] = Read<uint8_t>(addr + 1);
@@ -1388,10 +1388,7 @@ int main(int argc, char*argv[]){
         if (server.Accept()) {
             target_pid = FindPid("com.dts.freefiremax");
             if (target_pid > 0) {
-                mem_fd = my_open_mem(target_pid);
-                if (mem_fd <= 0) {
-                    return 1;
-                }
+                
             } else {
                 exit(1);
             }

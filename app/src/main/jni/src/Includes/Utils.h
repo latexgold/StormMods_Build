@@ -24,6 +24,13 @@ uintptr_t libAddress, anogs;
 extern bool g_useKernelDriver;
 bool g_useKernelDriver = true; // Forced to true to prevent user-space reads
 
+// Dummy variables to satisfy Server.cpp compilation
+int mem_fd = 0; 
+
+int my_open_mem(int pid) {
+    return 0; // Return 0 so it never actually opens /proc/pid/mem
+}
+
 // UTF-8 conversion macros (kept from original)
 #define halfShift 10
 #define UNI_SUR_HIGH_START  (UTF32)0xD800

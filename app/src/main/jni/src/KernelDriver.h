@@ -3,28 +3,31 @@
 
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <string>
 #include <cstring>
 #include <errno.h>
 #include <android/log.h>
+#include <stdint.h>
+#include <arpa/inet.h>
 
-#define NH_DEVICE "/dev/nh"
+// The command defined in the KPM
+#define OP_READ_MEM 8001
 
-struct nh_rw {
+// This struct MUST exactly match the struct in the KPM's hello.c
+struct copy_memory_t {
     pid_t pid;
-    uint64_t addr;
-    void *data;
+    uintptr_t addr;
+    void* buffer;
     size_t size;
 };
-
-#define NH_READ   _IOWR('N', 1, struct nh_rw)
-#define NH_WRITE  _IOWR('N', 2, struct nh_rw)
 
 class KernelDriver {
 public:
     static bool isLoaded() {
-        int fd = open(NH_DEVICE, O_RDWR);
+        // The KPM hooks ioctl on UDP sockets. If we can create one, the KPM is active.
+        int fd = socket(AF_INET, SOCK_DGRAM, 0);
         if (fd >= 0) {
             close(fd);
             return true;
@@ -33,33 +36,28 @@ public:
     }
 
     static bool readMemory(pid_t pid, uint64_t addr, void *buffer, size_t size) {
-        int fd = open(NH_DEVICE, O_RDWR);
+        int fd = socket(AF_INET, SOCK_DGRAM, 0);
         if (fd < 0) return false;
 
-        struct nh_rw rw;
+        struct copy_memory_t rw;
         rw.pid = pid;
         rw.addr = addr;
-        rw.data = buffer;
+        rw.buffer = buffer;
         rw.size = size;
 
-        int ret = ioctl(fd, NH_READ, &rw);
+        // Send the read request to the KPM hook
+        int ret = ioctl(fd, OP_READ_MEM, &rw);
         close(fd);
+        
+        // KPM returns 0 on success
         return ret == 0;
     }
 
     static bool writeMemory(pid_t pid, uint64_t addr, const void *buffer, size_t size) {
-        int fd = open(NH_DEVICE, O_RDWR);
-        if (fd < 0) return false;
-
-        struct nh_rw rw;
-        rw.pid = pid;
-        rw.addr = addr;
-        rw.data = const_cast<void*>(buffer);
-        rw.size = size;
-
-        int ret = ioctl(fd, NH_WRITE, &rw);
-        close(fd);
-        return ret == 0;
+        // The linked KPM only implements OP_READ_MEM (8001).
+        // It does not have a write function. Return false so the hack 
+        // knows it cannot write memory safely.
+        return false; 
     }
 };
 

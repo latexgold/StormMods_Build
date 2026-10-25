@@ -6,7 +6,7 @@ LOCAL_MODULE := curl_static
 LOCAL_SRC_FILES := src/static/curl/$(TARGET_ARCH_ABI)/libcurl.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-# --- Module: cnative (ESP) ---
+# --- Module: cnative (ESP UI) ---
 include $(CLEAR_VARS)
 LOCAL_MODULE    := cnative
 LOCAL_SRC_FILES := \
@@ -27,19 +27,17 @@ LOCAL_CPPFLAGS  := -fvisibility=hidden -DNDEBUG -std=c++17 -fexceptions -frtti -
 LOCAL_LDFLAGS   := -Wl,--exclude-libs,ALL -s -latomic -Wl,--gc-sections -Wl,--icf=safe
 LOCAL_LDLIBS    := -llog -landroid -lz
 LOCAL_STATIC_LIBRARIES := curl_static
-LOCAL_ARM_MODE  := arm
 include $(BUILD_SHARED_LIBRARY)
 
-# --- Module: BKLKILL (Aimbot Payload) ---
+# --- Module: BKLKILL (Aimbot Payload .so) ---
 include $(CLEAR_VARS)
 LOCAL_MODULE    := BKLKILL
-# Add your Dobby cpp file here!
+# Added Dobby here to make the hook work
 LOCAL_SRC_FILES := src/Server.cpp src/Socket/server.cpp src/Includes/Dobby/dobby.c
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src $(LOCAL_PATH)/src/Includes
 LOCAL_CPPFLAGS  := -fvisibility=hidden -DNDEBUG -std=c++17 -fexceptions -frtti
 LOCAL_CFLAGS    := -Wno-error=format-security -fpermissive -fvisibility=hidden -fexceptions -frtti -DNDEBUG
 LOCAL_LDFLAGS   := -Wl,--exclude-libs,ALL -s -latomic
 LOCAL_LDLIBS    := -llog -lz
-LOCAL_ARM_MODE  := arm
-# CHANGED THIS LINE:
-include $(BUILD_SHARED_LIBRARY) 
+# CHANGED TO SHARED LIBRARY for injection
+include $(BUILD_SHARED_LIBRARY)

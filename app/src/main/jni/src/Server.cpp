@@ -31,39 +31,80 @@
 #define NG_LOG_TAG "WeaponScanner"
 #define NG_LOGI(...) __android_log_print(ANDROID_LOG_INFO, NG_LOG_TAG, __VA_ARGS__)
 
+// Lista de ID-uri deja cunoscute (mirror al Namegun::Init)
 static const std::unordered_set<int> kKnownWeaponIds = {
-        6016, 10006, 2102, 9476, 9479, 21001, 7812, 0, 2,80,81,82,7821,6,7802,11,63,126,127,12,178,179,180,7803,
-        14,629,70,7859,24,67,130,131,635,28,33,7805,39,7806,46,193,194,195,7807,47,7808,57,7809,73,74,7810,7811,
-        18,7817,26,72,48,7818,89,7820,21006,21007,21008,21009,7801,19,631,71,7866,30,61,122,123,7813,54,7814,
-        7,7840,8,60,120,121,7841,13,62,124,125,7842,15,7843,32,7844,35,43,637,21020,7863,49,69,88,228,229,230,7847,150,7848,
-        5,184,185,186,7835,29,41,7862,119,50,7837,86,7855,181,182,21002,7839,4,65,7858,21,64,128,129,7825,45,7822,75,805,806,807,7823,78,197,7824,
-        3,56,9,10,20,25,55,58,93,16,17,27,34,51,53,1,601,603,1201,1204,602,608,23,36,196,100,99,617,1401,1006,1015
+        // SPECIALS
+        6016, 10006, 2102, 9476, 9479, 21001, 7812,
+        // BOTS
+        0,
+        // ASSAULT RIFLES
+        2,80,81,82,7821,6,7802,11,63,126,127,12,178,179,180,7803,
+        14,629,70,7859,24,67,130,131,635,28,33,7805,39,7806,
+        46,193,194,195,7807,47,7808,57,7809,73,74,7810,7811,
+        // MARKSMAN
+        18,7817,26,72,48,7818,89,7820,21006,21007,21008,21009,7801,
+        // MACHINE GUNS
+        19,631,71,7866,30,61,122,123,7813,54,7814,
+        // SMGs
+        7,7840,8,60,120,121,7841,13,62,124,125,7842,15,7843,
+        32,7844,35,43,637,21020,7863,49,69,88,228,229,230,7847,150,7848,
+        // SHOTGUNS
+        5,184,185,186,7835,29,41,7862,119,50,7837,86,7855,181,182,21002,7839,
+        // SNIPERS
+        4,65,7858,21,64,128,129,7825,45,7822,75,805,806,807,7823,78,197,7824,
+        // PISTOLS
+        3,56,9,10,20,25,55,58,93,
+        // MELEE
+        16,17,27,34,51,53,
+        // FIST
+        1,
+        // GRENADES
+        601,603,1201,1204,602,608,
+        // OTHERS
+        23,36,196,
+        // MISC
+        100,99,617,1401,1006,1015
 };
 
 static std::unordered_set<int> g_loggedUnknownWeapons;
 static std::mutex g_weaponLogMutex;
+
 static const char* kWeaponLogPaths[] = {
-        "/data/media/0/Download/unknown_weapon_ids.txt", "/sdcard/Download/unknown_weapon_ids.txt",
-        "/storage/emulated/0/Download/unknown_weapon_ids.txt", "/data/local/tmp/unknown_weapon_ids.txt",
+        "/data/media/0/Download/unknown_weapon_ids.txt",
+        "/sdcard/Download/unknown_weapon_ids.txt",
+        "/storage/emulated/0/Download/unknown_weapon_ids.txt",
+        "/data/local/tmp/unknown_weapon_ids.txt",
 };
 
 static void CheckAndLogWeapon(short gunId) {
     if (gunId == 0) return;
     int adjustedId = gunId < 0 ? gunId + 25000 : gunId;
     bool known = kKnownWeaponIds.count(adjustedId) > 0;
+    NG_LOGI("[Weapon] raw=%d adjusted=%d status=%s", (int)gunId, adjustedId, known ? "KNOWN" : "UNKNOWN");
     if (known) return;
+
     std::lock_guard<std::mutex> lock(g_weaponLogMutex);
     if (g_loggedUnknownWeapons.count(adjustedId)) return;
     g_loggedUnknownWeapons.insert(adjustedId);
+
+    mkdir("/data/media/0/Download", 0775);
+    mkdir("/data/media/0", 0775);
+    mkdir("/data/local/tmp", 0777);
+
     for (const char* path : kWeaponLogPaths) {
         std::ofstream f(path, std::ios::app);
-        if (f.is_open()) { f << adjustedId << "\n"; f.flush(); f.close(); chmod(path, 0664); return; }
+        if (f.is_open()) {
+            f << adjustedId << "\n"; f.flush(); f.close(); chmod(path, 0664);
+            NG_LOGI("[Weapon] SAVED unknown ID %d -> %s", adjustedId, path);
+            return;
+        }
     }
 }
 
 const Offsets* currentOffsets = &FFMax;
 void setCurrentVersion(const std::string& version) {
-    if (version == "v2.133.x") currentOffsets = &FFMaxInd; else currentOffsets = &FFMax;
+    if (version == "v2.133.x") currentOffsets = &FFMaxInd;
+    else currentOffsets = &FFMax;
 }
 
 std::random_device rd;
@@ -74,19 +115,31 @@ Vector3 finalSilentPos = Vector3::Zero();
 Vector3 finalAimCollider = Vector3::Zero();
 
 std::unordered_map<uintptr_t, bool> g_isScaled;
-static bool g_isDiveFrozen = false; static bool diveact = false;
-Vector3 g_originalDivePos = Vector3::Zero(); float g_diveDownDistance = 0.9f;
-uintptr_t g_currentLocalPlayer = 0; uintptr_t g_pullEnemyTargetAddr = 0;
-std::atomic<bool> g_hasPullTargetV2{false}; Vector3 g_aimHardTargetPos = Vector3::Zero();
-uintptr_t g_aimHardTargetObj = 0; std::atomic<bool> g_hasAimHardTarget{false};
-std::mutex g_aimHardMutex; uintptr_t g_aimbotTargetObj = 0; Vector3 g_aimbotTargetPos = Vector3::Zero();
-uintptr_t g_aimLagTargetObj = 0; Vector3 g_aimLagTargetPos = Vector3::Zero();
-std::atomic<bool> g_hasAimLagTarget{false}; bool aimHead = false;
-float currentAngle = 0.0f; float jitterTime = 0.0f; float spinSpeed = 0.0f; int spinDirection = 1; float changeTimer = 0.0f;
+static bool g_isDiveFrozen = false;
+static bool diveact = false;
+Vector3 g_originalDivePos = Vector3::Zero();
+float g_diveDownDistance = 0.9f;
+uintptr_t g_currentLocalPlayer = 0;
+uintptr_t g_pullEnemyTargetAddr = 0;
+std::atomic<bool> g_hasPullTargetV2{false};
+Vector3 g_aimHardTargetPos = Vector3::Zero();
+uintptr_t g_aimHardTargetObj = 0;
+std::atomic<bool> g_hasAimHardTarget{false};
+std::mutex g_aimHardMutex;
+uintptr_t g_aimbotTargetObj = 0;
+Vector3 g_aimbotTargetPos = Vector3::Zero();
+uintptr_t g_aimLagTargetObj = 0;
+Vector3 g_aimLagTargetPos = Vector3::Zero();
+std::atomic<bool> g_hasAimLagTarget{false};
+bool aimHead = false;
+float currentAngle = 0.0f;
+float jitterTime = 0.0f;
+float spinSpeed = 0.0f;
+int spinDirection = 1;
+float changeTimer = 0.0f;
 
 static const std::unordered_set<short> blockedWeaponIds = {6016, 10006, -15524, -15521, 601, 603, 1201, 1204, 602, 608, 23, 1401, 1006, 1015 };
 
-// --- GAME STATE CHECK (Prevents crash before reading any pointers) ---
 bool IsGameActive() {
     if (libAddress == 0) return false;
     uintptr_t gameFacade = Read<uintptr_t>(libAddress + currentOffsets->GameFacade_c);
@@ -96,7 +149,7 @@ bool IsGameActive() {
     uintptr_t m_Match = Read<uintptr_t>(staticClass + currentOffsets->m_Match);
     if (!m_Match) return false;
     int matchState = Read<int>(m_Match + currentOffsets->MatchRun);
-    return (matchState == 1); // 1 = In Match. If you exit, this becomes false instantly.
+    return (matchState == 1); // 1 means In Match
 }
 
 Vector3 GetCameraWorldPosManual(D3DMatrix m) {
@@ -104,18 +157,23 @@ Vector3 GetCameraWorldPosManual(D3DMatrix m) {
     float det = a11 * (a22 * a33 - a23 * a32) - a12 * (a21 * a33 - a23 * a31) + a13 * (a21 * a32 - a22 * a31);
     if (fabs(det) < 0.0001f) return Vector3::Zero();
     float inv = 1.0f / det;
-    return Vector3((b1 * (a22 * a33 - a23 * a32) - a12 * (b2 * a33 - a23 * b3) + a13 * (b2 * a32 - a22 * b3)) * inv,
-                   (a11 * (b2 * a33 - a23 * b3) - b1 * (a21 * a33 - a23 * a31) + a13 * (a21 * b3 - b2 * a31)) * inv,
-                   (a11 * (a22 * b3 - b2 * a32) - a12 * (a21 * b3 - b2 * a31) + b1 * (a21 * a32 - a22 * a31)) * inv);
+    return Vector3(
+            (b1 * (a22 * a33 - a23 * a32) - a12 * (b2 * a33 - a23 * b3) + a13 * (b2 * a32 - a22 * b3)) * inv,
+            (a11 * (b2 * a33 - a23 * b3) - b1 * (a21 * a33 - a23 * a31) + a13 * (a21 * b3 - b2 * a31)) * inv,
+            (a11 * (a22 * b3 - b2 * a32) - a12 * (a21 * b3 - b2 * a31) + b1 * (a21 * a32 - a22 * a31)) * inv
+    );
 }
 
 void getUTF8(char* dst, uintptr_t addr) {
     if (addr < 0x10000000) { dst[0] = '\0'; return; }
-    int stringLen = Read<int>(addr + 0x10); if (stringLen <= 0 || stringLen > 64) stringLen = 32;
-    unsigned char raw[128]; for (int i = 0; i < (stringLen * 2); i++) raw[i] = Read<unsigned char>(addr + 0x14 + i);
+    int stringLen = Read<int>(addr + 0x10);
+    if (stringLen <= 0 || stringLen > 64) stringLen = 32;
+    unsigned char raw[128];
+    for (int i = 0; i < (stringLen * 2); i++) raw[i] = Read<unsigned char>(addr + 0x14 + i);
     int j = 0;
     for (int i = 0; i < (stringLen * 2); i += 2) {
-        unsigned short unicode = raw[i] | (raw[i + 1] << 8); if (unicode == 0) break;
+        unsigned short unicode = raw[i] | (raw[i + 1] << 8);
+        if (unicode == 0) break;
         if (unicode < 0x80) dst[j++] = (char)unicode;
         else if (unicode < 0x800) { dst[j++] = (char)((unicode >> 6) | 0xC0); dst[j++] = (char)((unicode & 0x3F) | 0x80); }
         else if (unicode >= 0xD800 && unicode <= 0xDBFF) {
@@ -223,61 +281,35 @@ bool isWithinPullFOV(Vector3 screenPos, float pullFovRadius) {
     return sqrt(deltaX * deltaX + deltaY * deltaY) <= pullFovRadius;
 }
 
-// --- THREADS REWRITTEN WITH IsGameActive CHECKS ---
+// --- CRASH FIX APPLIED HERE (DEEP SLEEP) ---
 void SilentAimTh() {
     while (true) {
-        if (pPlayer.silen4a && g_currentLocalPlayer != 0 && IsGameActive()) {
-            bool isFiring = Read<bool>(g_currentLocalPlayer + currentOffsets->isFiring);
-            if (isFiring) {
+        if (!pPlayer.silen4a || g_currentLocalPlayer == 0 || !IsGameActive()) {
+            keepAiming = false;
+            currentBestTargetObj = 0;
+            currentBestTargetPos = Vector3::Zero();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Sleep 1 full second
+            continue;
+        }
+
+        bool isFiring = Read<bool>(g_currentLocalPlayer + currentOffsets->isFiring);
+        if (isFiring) {
+            if (keepAiming && currentBestTargetObj != 0) {
                 uintptr_t aimingInfo = Read<uintptr_t>(g_currentLocalPlayer + currentOffsets->AimInfo);
-                if (aimingInfo && keepAiming && currentBestTargetObj != 0) {
+                if (aimingInfo) {
                     Vector3 startPos = Read<Vector3>(aimingInfo + currentOffsets->StartPos);
                     Vector3 dirToTarget = currentBestTargetPos - startPos;
                     float len = sqrtf(dirToTarget.X*dirToTarget.X + dirToTarget.Y*dirToTarget.Y + dirToTarget.Z*dirToTarget.Z);
                     if (len > 0.0001f) dirToTarget /= len; else dirToTarget = Vector3(0, 0, 1);
-                    if (startPos.X != 0 && startPos.Y != 0 && startPos.Z != 0) Write<Vector3>(aimingInfo + currentOffsets->RayDir, dirToTarget);
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(15));
-            } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            }
-        } else {
-            keepAiming = false; currentBestTargetObj = 0; currentBestTargetPos = Vector3::Zero();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-}
-
-void AimHardTh() {
-    static std::random_device rd; static std::mt19937 gen(rd());
-    static std::uniform_int_distribution<int> sleepDist(40, 100);
-
-    while (true) {
-        if (pPlayer.aimhard && g_currentLocalPlayer != 0 && IsGameActive()) {
-            bool isFiring = Read<bool>(g_currentLocalPlayer + currentOffsets->isFiring);
-            if (isFiring) {
-                std::lock_guard<std::mutex> lock(g_aimHardMutex);
-                if (g_aimHardTargetObj != 0 && g_aimHardTargetPos != Vector3::Zero()) {
-                    auto FollowCamera = Read<uintptr_t>(g_currentLocalPlayer + currentOffsets->FollowCamera); auto Camera = FollowCamera ? Read<uintptr_t>(FollowCamera + currentOffsets->Camera) : 0;
-                    auto IntPtrCam = Camera ? Read<uintptr_t>(Camera + currentOffsets->intPtrCam) : 0;
-                    if (IntPtrCam) {
-                        auto matrix = Read<D3DMatrix>(IntPtrCam + currentOffsets->Matrix);
-                        Vector3 cameraPos = GetCameraWorldPosManual(matrix);
-                        if (cameraPos != Vector3::Zero()) {
-                            Vector3 dir = Vector3::Normalized(g_aimHardTargetPos - cameraPos);
-                            Quaternion targetRot = Quaternion::LookRotation(dir, Vector3(0, 1, 0));
-                            Write<Quaternion>(g_currentLocalPlayer + currentOffsets->AimRotation, targetRot);
-                            std::this_thread::sleep_for(std::chrono::milliseconds(sleepDist(gen)));
-                        }
+                    if (startPos.X != 0 && startPos.Y != 0 && startPos.Z != 0) {
+                        Write<Vector3>(aimingInfo + currentOffsets->RayDir, dirToTarget);
                     }
                 }
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(15));
         } else {
-            std::lock_guard<std::mutex> lock(g_aimHardMutex);
-            g_hasAimHardTarget = false; g_aimHardTargetObj = 0; g_aimHardTargetPos = Vector3::Zero();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 }
 
@@ -467,6 +499,46 @@ void PullEnemyTh() {
             } else { lockedEnemy = 0; wasFiringLastFrame = false; }
         } else { lockedEnemy = 0; wasFiringLastFrame = false; }
         std::this_thread::sleep_for(std::chrono::milliseconds(7));
+    }
+}
+
+// --- CRASH FIX APPLIED HERE (DEEP SLEEP) ---
+void AimHardTh() {
+    static std::random_device rd; 
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<int> sleepDist(40, 100);
+
+    while (true) {
+        if (!pPlayer.aimhard || g_currentLocalPlayer == 0 || !IsGameActive()) {
+            std::lock_guard<std::mutex> lock(g_aimHardMutex);
+            g_hasAimHardTarget = false; 
+            g_aimHardTargetObj = 0; 
+            g_aimHardTargetPos = Vector3::Zero();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Sleep 1 full second
+            continue;
+        }
+
+        bool isFiring = Read<bool>(g_currentLocalPlayer + currentOffsets->isFiring);
+        if (isFiring) {
+            std::lock_guard<std::mutex> lock(g_aimHardMutex);
+            if (g_aimHardTargetObj != 0 && g_aimHardTargetPos != Vector3::Zero()) {
+                auto FollowCamera = Read<uintptr_t>(g_currentLocalPlayer + currentOffsets->FollowCamera); 
+                auto Camera = FollowCamera ? Read<uintptr_t>(FollowCamera + currentOffsets->Camera) : 0;
+                auto IntPtrCam = Camera ? Read<uintptr_t>(Camera + currentOffsets->intPtrCam) : 0;
+                
+                if (IntPtrCam) {
+                    auto matrix = Read<D3DMatrix>(IntPtrCam + currentOffsets->Matrix);
+                    Vector3 cameraPos = GetCameraWorldPosManual(matrix);
+                    if (cameraPos != Vector3::Zero()) {
+                        Vector3 dir = Vector3::Normalized(g_aimHardTargetPos - cameraPos);
+                        Quaternion targetRot = Quaternion::LookRotation(dir, Vector3(0, 1, 0));
+                        Write<Quaternion>(g_currentLocalPlayer + currentOffsets->AimRotation, targetRot);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(sleepDist(gen)));
+                    }
+                }
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 }
 

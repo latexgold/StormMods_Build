@@ -20,6 +20,7 @@ uintptr_t libAddress, anogs;
 extern bool g_useKernelDriver;
 bool g_useKernelDriver = true;
 
+// Dummy variables to fix Server.cpp compilation
 int mem_fd = 0;
 int my_open_mem(int pid) { return 0; }
 
@@ -71,6 +72,7 @@ uintptr_t FindLibrary(const char* name, int index) {
     return start;
 }
 
+// READ VIA HMKPM (Ring-0)
 template<class T>
 T Read(uintptr_t address) {
     T buf{};
@@ -79,7 +81,7 @@ T Read(uintptr_t address) {
             return buf;
         }
     }
-    return buf; 
+    return buf; // Fails silently if KPM is not loaded
 }
 
 template<>
@@ -96,6 +98,7 @@ std::string Read<std::string>(uintptr_t address) {
     return result;
 }
 
+// WRITE VIA HMKPM (Ring-0)
 template<typename T>
 bool Write(uintptr_t address, T value) {
     if (g_useKernelDriver && KernelDriver::isLoaded()) {
@@ -105,6 +108,16 @@ bool Write(uintptr_t address, T value) {
 }
 
 uintptr_t getMemoryAddr(uintptr_t address) { return Read<uintptr_t>(address); }
+
+std::vector<uint8_t> ParseHexBytes(const std::string& hexString) {
+    std::vector<uint8_t> bytes;
+    std::istringstream stream(hexString);
+    std::string byteStr;
+    while (stream >> byteStr) {
+        try { bytes.push_back(static_cast<uint8_t>(std::stoul(byteStr, nullptr, 16))); } catch (...) {}
+    }
+    return bytes;
+}
 
 bool WriteIO(uintptr_t address, const std::vector<uint8_t>& bytes) {
     if (g_useKernelDriver && KernelDriver::isLoaded()) {
@@ -120,5 +133,80 @@ bool WriteIO1(uintptr_t address, const void* data, size_t size) {
     return false;
 }
 
-// The rest of the Utils.h (D3DMatrix, Vector4, MonoDictionary, string converters, etc.)
-// remains exactly as it was in the original code. 
+bool WriteIO(uintptr_t address, const std::string& hexString) {
+    return WriteIO(address, ParseHexBytes(hexString));
+}
+
+// --- REQUIRED CLASSES AND STRUCTS FOR SERVER.CPP ---
+struct D3DMatrix { float _11, _12, _13, _14, _21, _22, _23, _24, _31, _32, _33, _34, _41, _42, _43, _44; };
+struct Vector4 { float X, Y, Z, W; };
+
+class MonoDictionary {
+public:
+    uintptr_t getValues() { return Read<uintptr_t>(reinterpret_cast<uintptr_t>(this) + 0x18) + 0x20; }
+    int getNumValues() { return Read<int>(reinterpret_cast<uintptr_t>(this) + 0x20); }
+};
+
+typedef enum { strictConversion = 0, lenientConversion } ConversionFlags;
+typedef enum { conversionOK, sourceExhausted, targetExhausted, sourceIllegal, conversionFailed } ConversionResult;
+
+int Utf16_To_Utf8(const UTF16 *sourceStart, UTF8 *targetStart, size_t outLen, ConversionFlags flags) {
+    int result = conversionOK;
+    const UTF16 *source = sourceStart;
+    UTF8 *target = targetStart;
+    UTF8 *targetEnd = targetStart + outLen;
+    if (!source || !targetStart) return conversionFailed;
+    while (*source) {
+        UTF32 ch; unsigned short bytesToWrite = 0;
+        const UTF32 byteMask = 0xBF, byteMark = 0x80;
+        const UTF16 *oldSource = source;
+        ch = *source++;
+        if (ch >= UNI_SUR_HIGH_START && ch <= UNI_SUR_HIGH_END) {
+            if (*source) {
+                UTF32 ch2 = *source;
+                if (ch2 >= UNI_SUR_LOW_START && ch2 <= UNI_SUR_LOW_END) {
+                    ch = ((ch - UNI_SUR_HIGH_START) << halfShift) + (ch2 - UNI_SUR_LOW_START) + halfBase; ++source;
+                } else if (flags == strictConversion) { --source; result = sourceIllegal; break; }
+            } else { --source; result = sourceExhausted; break; }
+        } else if (flags == strictConversion) {
+            if (ch >= UNI_SUR_LOW_START && ch <= UNI_SUR_LOW_END) { --source; result = sourceIllegal; break; }
+        }
+        if (ch < 0x80) bytesToWrite = 1; else if (ch < 0x800) bytesToWrite = 2; else if (ch < 0x10000) bytesToWrite = 3; else if (ch < 0x110000) bytesToWrite = 4; else { bytesToWrite = 3; ch = UNI_REPLACEMENT_CHAR; }
+        target += bytesToWrite;
+        if (target > targetEnd) { source = oldSource; target -= bytesToWrite; result = targetExhausted; break; }
+        switch (bytesToWrite) {
+            case 4: *--target = (UTF8)((ch | byteMark) & byteMask); ch >>= 6; [[fallthrough]];
+            case 3: *--target = (UTF8)((ch | byteMark) & byteMask); ch >>= 6; [[fallthrough]];
+            case 2: *--target = (UTF8)((ch | byteMark) & byteMask); ch >>= 6; [[fallthrough]];
+            case 1: *--target = (UTF8)(ch | firstByteMark[bytesToWrite]);
+        }
+        target += bytesToWrite;
+    }
+    if (target < targetEnd) *target = '\0'; else if (target == targetEnd) *(target - 1) = '\0';
+    return result;
+}
+
+void getCharacterName(uintptr_t address, UTF8 *transcoding, size_t bufSize) {
+    if (bufSize < 1) return;
+    memset(transcoding, 0, bufSize);
+    UTF16 buf16[34] = {0};
+    int m = 0;
+    for (int i = 0; i < 4; i++) {
+        int classname = Read<int>(address + i * 4);
+        int high = (classname >> 16) & 0xFFFF;
+        int low = classname & 0xFFFF;
+        if (low) buf16[m++] = static_cast<UTF16>(low);
+        if (high) buf16[m++] = static_cast<UTF16>(high);
+        if (m >= 32) break;
+    }
+    buf16[m] = 0;
+    int result = Utf16_To_Utf8(buf16, transcoding, bufSize - 1, strictConversion);
+    if (result != conversionOK) transcoding[0] = '\0';
+}
+
+bool WriteBytes(uintptr_t address, const void* data, size_t size) { return WriteIO1(address, data, size); }
+bool ReadBytes(uintptr_t address, void* buffer, size_t size) { return KernelDriver::readMemory(target_pid, address, buffer, size); }
+bool InitMemoryAccess(pid_t pid) { target_pid = pid; return KernelDriver::isLoaded(); }
+void CleanupMemoryAccess() { target_pid = -1; }
+
+#endif // UTILS

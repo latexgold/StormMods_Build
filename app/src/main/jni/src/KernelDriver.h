@@ -5,60 +5,71 @@
 #include <sys/syscall.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
+#include <vector>
 
-// HMKPM Magic Commands
-#define HMKPN_READ_CMD  0x484D4B504EULL // "HMKPN"
-#define HMKPO_WRITE_CMD 0x484D4B504FULL // "HMKPO"
+#define HMKPM_MAGIC_READ  0x484D4B504EULL
+#define HMKPM_MAGIC_WRITE 0x484D4B504FULL
 
-// The structure HMKPM expects
-struct hmkpm_rw {
-    uint64_t magic;
-    pid_t pid;
+struct hmkpm_req {
     uint64_t addr;
-    void* buffer;
     uint64_t size;
+    uint32_t pid;
+    uint32_t _pad;
 };
 
 class KernelDriver {
 public:
     static bool isLoaded() {
-        // A quick dummy read to see if the syscall is intercepted
+        // Quick read to test if the KPM is intercepting the syscall
         uint64_t dummy = 0;
-        struct hmkpm_rw rw;
-        rw.magic = HMKPN_READ_CMD;
-        rw.pid = getpid();
-        rw.addr = (uint64_t)&dummy;
-        rw.buffer = &dummy;
-        rw.size = sizeof(dummy);
-        
-        // __NR_getresuid is syscall 148 on arm64. 
-        // HMKPM intercepts this and checks the arguments.
-        long ret = syscall(__NR_getresuid, &rw, nullptr, nullptr);
-        return ret == 0;
+        return readMemory(getpid(), (uint64_t)&dummy, &dummy, sizeof(dummy));
     }
 
     static bool readMemory(pid_t pid, uint64_t addr, void *buffer, size_t size) {
-        struct hmkpm_rw rw;
-        rw.magic = HMKPN_READ_CMD;
-        rw.pid = pid;
-        rw.addr = addr;
-        rw.buffer = buffer;
-        rw.size = size;
+        if (size > 0x100000) return false;
+
+        // Allocate memory for the header + the payload
+        size_t total_size = sizeof(hmkpm_req) + size;
+        std::vector<uint8_t> payload(total_size);
+
+        struct hmkpm_req* req = (struct hmkpm_req*)payload.data();
+        req->addr = addr;
+        req->size = size;
+        req->pid = pid;
+        req->_pad = 0;
+
+        // The data buffer comes right after the 24-byte header
+        void* data_ptr = payload.data() + sizeof(hmkpm_req);
+
+        // Syscall: __NR_getresuid(magic, user_buffer, total_size)
+        long ret = syscall(__NR_getresuid, HMKPM_MAGIC_READ, payload.data(), total_size);
         
-        long ret = syscall(__NR_getresuid, &rw, nullptr, nullptr);
-        return ret == 0;
+        if (ret == 0) {
+            memcpy(buffer, data_ptr, size);
+            return true;
+        }
+        return false;
     }
 
     static bool writeMemory(pid_t pid, uint64_t addr, const void *buffer, size_t size) {
-        struct hmkpm_rw rw;
-        rw.magic = HMKPO_WRITE_CMD;
-        rw.pid = pid;
-        rw.addr = addr;
-        rw.buffer = const_cast<void*>(buffer);
-        rw.size = size;
+        if (size > 0x100000) return false;
+
+        size_t total_size = sizeof(hmkpm_req) + size;
+        std::vector<uint8_t> payload(total_size);
+
+        struct hmkpm_req* req = (struct hmkpm_req*)payload.data();
+        req->addr = addr;
+        req->size = size;
+        req->pid = pid;
+        req->_pad = 0;
+
+        // Copy the user data into the payload right after the header
+        void* data_ptr = payload.data() + sizeof(hmkpm_req);
+        memcpy(data_ptr, buffer, size);
+
+        // Syscall
+        long ret = syscall(__NR_getresuid, HMKPM_MAGIC_WRITE, payload.data(), total_size);
         
-        long ret = syscall(__NR_getresuid, &rw, nullptr, nullptr);
         return ret == 0;
     }
 };

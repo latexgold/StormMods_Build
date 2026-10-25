@@ -284,23 +284,30 @@ bool isWithinPullFOV(Vector3 screenPos, float pullFovRadius) {
 // --- CRASH FIX APPLIED HERE (DEEP SLEEP) ---
 void SilentAimTh() {
     while (true) {
+        // CRASH FIX: If toggle is off, or game is not active, kill the thread logic.
         if (!pPlayer.silen4a || g_currentLocalPlayer == 0 || !IsGameActive()) {
             keepAiming = false;
             currentBestTargetObj = 0;
             currentBestTargetPos = Vector3::Zero();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Sleep 1 full second
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Sleep for 1 full second
             continue;
         }
 
+        // From here, we know we are inside a match and the toggle is on.
         bool isFiring = Read<bool>(g_currentLocalPlayer + currentOffsets->isFiring);
+        
         if (isFiring) {
+            // Validate that the target is still alive before doing math
             if (keepAiming && currentBestTargetObj != 0) {
                 uintptr_t aimingInfo = Read<uintptr_t>(g_currentLocalPlayer + currentOffsets->AimInfo);
                 if (aimingInfo) {
                     Vector3 startPos = Read<Vector3>(aimingInfo + currentOffsets->StartPos);
                     Vector3 dirToTarget = currentBestTargetPos - startPos;
+                    
                     float len = sqrtf(dirToTarget.X*dirToTarget.X + dirToTarget.Y*dirToTarget.Y + dirToTarget.Z*dirToTarget.Z);
-                    if (len > 0.0001f) dirToTarget /= len; else dirToTarget = Vector3(0, 0, 1);
+                    if (len > 0.0001f) dirToTarget /= len; 
+                    else dirToTarget = Vector3(0, 0, 1);
+                    
                     if (startPos.X != 0 && startPos.Y != 0 && startPos.Z != 0) {
                         Write<Vector3>(aimingInfo + currentOffsets->RayDir, dirToTarget);
                     }
@@ -312,7 +319,6 @@ void SilentAimTh() {
         }
     }
 }
-
 void RotateTh() {
     auto lastTime = std::chrono::high_resolution_clock::now();
     while (true) {

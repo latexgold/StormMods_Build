@@ -6,7 +6,7 @@ LOCAL_MODULE := curl_static
 LOCAL_SRC_FILES := src/static/curl/$(TARGET_ARCH_ABI)/libcurl.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-# --- Module: cnative (ESP UI) ---
+# --- Module: cnative (ESP) ---
 include $(CLEAR_VARS)
 LOCAL_MODULE    := cnative
 LOCAL_SRC_FILES := \
@@ -27,17 +27,29 @@ LOCAL_CPPFLAGS  := -fvisibility=hidden -DNDEBUG -std=c++17 -fexceptions -frtti -
 LOCAL_LDFLAGS   := -Wl,--exclude-libs,ALL -s -latomic -Wl,--gc-sections -Wl,--icf=safe
 LOCAL_LDLIBS    := -llog -landroid -lz
 LOCAL_STATIC_LIBRARIES := curl_static
+LOCAL_ARM_MODE  := arm
 include $(BUILD_SHARED_LIBRARY)
 
-# --- Module: BKLKILL (Aimbot Payload .so) ---
+# --- Module: BKLKILL (UI Executable) ---
 include $(CLEAR_VARS)
 LOCAL_MODULE    := BKLKILL
-# Added Dobby here to make the hook work
-LOCAL_SRC_FILES := src/Server.cpp src/Socket/server.cpp src/Includes/Dobby/dobby.c
+LOCAL_SRC_FILES := src/Server.cpp src/Socket/server.cpp
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/src $(LOCAL_PATH)/src/Includes
 LOCAL_CPPFLAGS  := -fvisibility=hidden -DNDEBUG -std=c++17 -fexceptions -frtti
 LOCAL_CFLAGS    := -Wno-error=format-security -fpermissive -fvisibility=hidden -fexceptions -frtti -DNDEBUG
+LOCAL_LDFLAGS   := -Wl,--exclude-libs,ALL -s
+LOCAL_LDLIBS    := -llog -lz
+LOCAL_ARM_MODE  := arm
+include $(BUILD_EXECUTABLE)
+
+# --- Module: payload (Aimbot .so for Injection) ---
+include $(CLEAR_VARS)
+LOCAL_MODULE    := payload
+LOCAL_SRC_FILES := src/Server.cpp src/Includes/Dobby/dobby.c
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/src $(LOCAL_PATH)/src/Includes
+# Added -fPIC because it's a shared library
+LOCAL_CPPFLAGS  := -fPIC -fvisibility=hidden -DNDEBUG -std=c++17 -fexceptions -frtti
+LOCAL_CFLAGS    := -fPIC -Wno-error=format-security -fpermissive -fvisibility=hidden -fexceptions -frtti -DNDEBUG
 LOCAL_LDFLAGS   := -Wl,--exclude-libs,ALL -s -latomic
 LOCAL_LDLIBS    := -llog -lz
-# CHANGED TO SHARED LIBRARY for injection
 include $(BUILD_SHARED_LIBRARY)

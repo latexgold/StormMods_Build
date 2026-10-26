@@ -20,7 +20,6 @@ uintptr_t libAddress, anogs;
 extern bool g_useKernelDriver;
 bool g_useKernelDriver = true;
 
-// Dummy variables to fix Server.cpp compilation
 int mem_fd = 0;
 int my_open_mem(int pid) { return 0; }
 
@@ -72,7 +71,6 @@ uintptr_t FindLibrary(const char* name, int index) {
     return start;
 }
 
-// READ VIA HMKPM (Ring-0)
 template<class T>
 T Read(uintptr_t address) {
     T buf{};
@@ -81,7 +79,7 @@ T Read(uintptr_t address) {
             return buf;
         }
     }
-    return buf; // Fails silently if KPM is not loaded
+    return buf;
 }
 
 template<>
@@ -98,7 +96,6 @@ std::string Read<std::string>(uintptr_t address) {
     return result;
 }
 
-// WRITE VIA HMKPM (Ring-0)
 template<typename T>
 bool Write(uintptr_t address, T value) {
     if (g_useKernelDriver && KernelDriver::isLoaded()) {
@@ -137,7 +134,6 @@ bool WriteIO(uintptr_t address, const std::string& hexString) {
     return WriteIO(address, ParseHexBytes(hexString));
 }
 
-// --- REQUIRED CLASSES AND STRUCTS FOR SERVER.CPP ---
 struct D3DMatrix { float _11, _12, _13, _14, _21, _22, _23, _24, _31, _32, _33, _34, _41, _42, _43, _44; };
 struct Vector4 { float X, Y, Z, W; };
 

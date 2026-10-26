@@ -7,6 +7,7 @@
 #include <string.h>
 #include <vector>
 
+// HMKPM Magic Commands
 #define HMKPM_MAGIC_READ  0x484D4B504EULL
 #define HMKPM_MAGIC_WRITE 0x484D4B504FULL
 
@@ -20,7 +21,6 @@ struct hmkpm_req {
 class KernelDriver {
 public:
     static bool isLoaded() {
-        // Quick read to test if the KPM is intercepting the syscall
         uint64_t dummy = 0;
         return readMemory(getpid(), (uint64_t)&dummy, &dummy, sizeof(dummy));
     }
@@ -28,7 +28,6 @@ public:
     static bool readMemory(pid_t pid, uint64_t addr, void *buffer, size_t size) {
         if (size > 0x100000) return false;
 
-        // Allocate memory for the header + the payload
         size_t total_size = sizeof(hmkpm_req) + size;
         std::vector<uint8_t> payload(total_size);
 
@@ -38,10 +37,8 @@ public:
         req->pid = pid;
         req->_pad = 0;
 
-        // The data buffer comes right after the 24-byte header
         void* data_ptr = payload.data() + sizeof(hmkpm_req);
 
-        // Syscall: __NR_getresuid(magic, user_buffer, total_size)
         long ret = syscall(__NR_getresuid, HMKPM_MAGIC_READ, payload.data(), total_size);
         
         if (ret == 0) {
@@ -63,11 +60,9 @@ public:
         req->pid = pid;
         req->_pad = 0;
 
-        // Copy the user data into the payload right after the header
         void* data_ptr = payload.data() + sizeof(hmkpm_req);
         memcpy(data_ptr, buffer, size);
 
-        // Syscall
         long ret = syscall(__NR_getresuid, HMKPM_MAGIC_WRITE, payload.data(), total_size);
         
         return ret == 0;
